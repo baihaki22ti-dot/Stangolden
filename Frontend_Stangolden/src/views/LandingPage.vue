@@ -7,7 +7,7 @@ const router = useRouter()
 
 // Arahkan ke LoginView
 const goToLogin = () => {
-  router.push('/LoginView')
+  router.push('/login')
 }
 
 onMounted(async () => {
