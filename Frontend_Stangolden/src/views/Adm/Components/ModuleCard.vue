@@ -28,6 +28,10 @@
         <p class="text-xs md:text-sm mb-3 description-clamp">{{ description }}</p>
       </div>
 
+      <div class="w-full flex justify-end">
+        <slot name="cta">
+        </slot>
+      </div>
     </div>
   </article>
 </template>

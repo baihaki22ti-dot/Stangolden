@@ -3,6 +3,7 @@ import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import stangolden from "@/assets/stangolden-bg.png";
+import backendServices from "@/services/backendServices";
 
 const router = useRouter();
 
@@ -13,19 +14,33 @@ const password = ref("");
 
 async function handleLogin() {
   try {
-    const res = await axios.post("http://localhost:8000/api/login", {
+    // If you're using Sanctum cookie flow, call csrf first:
+    try { await backendServices.auth.csrf(); } catch(e){}
+
+    // use backendService.login which saves token if returned
+    const res = await backendServices.auth.login({
       email: email.value,
-      password: password.value,
+      password: password.value
     });
 
-    const user = res.data.user;
+    const user = res.user || res;
+
+    // If your backend returns token and we stored it in localStorage, axios interceptor will attach it.
+    // If you use cookie mode instead, ensure csrf-cookie was called and withCredentials=true.
+
+    if (!user.approved && user.role !== 'admin') {
+      alert('Akun Anda belum disetujui oleh admin. Silakan tunggu konfirmasi.');
+      return;
+    }
 
     router.push(user.role === "admin" ? "/admin/dashboard" : "/dashboard");
-
   } catch (err) {
-    alert("Email atau password salah!");
+    console.error(err);
+    const msg = err?.response?.data?.message || 'Email atau password salah!';
+    alert(msg);
   }
 }
+
 
 const reg = ref({
   nama: "",
@@ -43,11 +58,23 @@ async function handleRegister() {
   }
 
   try {
-    await axios.post("http://localhost:8000/api/register", reg.value);
-    alert("Registrasi berhasil!");
+    const payload = {
+      name: reg.value.nama,
+      email: reg.value.email,
+      password: reg.value.sandi,
+      password_confirmation: reg.value.konfirmasi,
+      phone: reg.value.hp || null,
+      city: reg.value.kota || null
+    };
+
+    const res = await backendService.auth.register(payload);
+    alert(res.message || "Registrasi berhasil! Tunggu persetujuan admin.");
     isRegister.value = false;
+    reg.value = { nama: '', email: '', sandi: '', konfirmasi: '', hp: '', kota: '' };
   } catch (err) {
-    alert("Gagal registrasi!");
+    console.error(err)
+    const msg = err?.response?.data?.message || (err?.response?.data?.errors ? Object.values(err.response.data.errors).flat().join('\n') : 'Gagal registrasi!');
+    alert(msg);
   }
 }
 </script>

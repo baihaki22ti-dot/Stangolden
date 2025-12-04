@@ -2,9 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LandingPage from '../views/LandingPage.vue'
 import LoginView from '../views/LoginView.vue'
 import AdminDashboard from '../views/Adm/AdminDashboard.vue'
-import SiswaDashboard from '../views/Siswa/SiswaDashboard.vue'
 
-//lazy-loaded views admin
+// lazy-loaded views admin
 const TryOutAdm = () => import('@/views/Adm/TryOutView.vue')
 const FeedbackAdm = () => import('@/views/Adm/FeedbackView.vue')
 const ModulViewAdm = () => import('@/views/Adm/ModuleView.vue')
@@ -17,53 +16,43 @@ const ModulUPKPAdm = () => import('@/views/Adm/ModulUPKP.vue')
 const ModulTugasBelajarAdm = () => import('@/views/Adm/ModulTugasBelajar.vue')
 const ModuleDetailAdm = () => import('@/views/Adm/ModulDetail.vue')
 
-//lazy-loaded views siswa
-
-const TryOutSiswa = () => import('@/views/Siswa/TryOutView.vue')
-const FeedbackSiswa = () => import('@/views/Siswa/FeedbackView.vue')
-const ModulViewSiswa = () => import('@/views/Siswa/ModuleView.vue')
-// const PesertaViewSiswa = () => import('@/views/Siswa/PesertaView.vue')
-const ModulViewerSiswa = () => import('@/views/Siswa/Components/ModulViewer.vue')
-// const TryOutListSiswa = () => import('@/views/Siswa/TryOutList.vue')
-// const TryOutFormSiswa = () => import('@/views/Siswa/TryOutForm.vue')
-const TryOutDetailSiswa = () => import('@/views/Siswa/TryOutDetail.vue')
-const ModulUPKPSiswa = () => import('@/views/Siswa/ModulUPKP.vue')
-const ModulTugasBelajarSiswa = () => import('@/views/Siswa/ModulTugasBelajar.vue')
-const ModuleDetailSiswa = () => import('@/views/Siswa/ModulDetail.vue')
-
 const routes = [
   { path: '/', name: 'landing', component: LandingPage },
   { path: '/login', name: 'login', component: LoginView },
 
   { path: '/admin/dashboard', name: 'AdminDashboard', component: AdminDashboard },
-  { path: '/dashboard', name: 'SiswaDashboard', component: SiswaDashboard },
+  { path: '/dashboard', name: 'SiswaDashboard', component: AdminDashboard },
 
-  //lazy-loaded modul viewer admin
-  { path: '/admin/modul/content/:id', name: 'ModulContent', component: ModulViewerAdm, props: true },
-  { path: '/admin/modul', name: 'Modul', component: ModulViewAdm },
-  { path: '/admin/peserta', name: 'peserta', component: PesertaViewAdm },
-  { path: '/admin/modul/upkp', name: 'ModulUPKP', component: ModulUPKPAdm },
-  { path: '/admin/modul/upkp/:slug', name: 'ModulUPKPDetail', component: ModuleDetailAdm, props: true },
-  { path: '/admin/modul/tugas-belajar', name: 'ModulTugasBelajar', component: ModulTugasBelajarAdm },
-  { path: '/admin/modul/tugas-belajar/:slug', name: 'ModulTugasBelajarDetail', component: ModuleDetailAdm, props: true },
-  { path: '/admin/tryout', name: 'TryOut', component: TryOutAdm },
-  { path: '/admin/feedback', name: 'Feedback', component: FeedbackAdm },
-  { path: '/admin/modul/:slug', name: 'ModulDetailGeneric', component: ModuleDetailAdm, props: true },
-  { path: '/admin/tryout/new', name: 'TryOutNew', component: TryOutFormAdm },
-  { path: '/admin/tryout/:id/edit', name: 'TryOutEdit', component: TryOutFormAdm, props: true },
-  { path: '/admin/tryout/:id', name: 'TryOutDetail', component: TryOutDetailAdm, props: true },
+  // modul viewer admin
+  { path: '/moduladm/content/:id', name: 'ModulContentAdmin', component: ModulViewerAdm, props: true },
+  { path: '/moduladm', name: 'Moduladmin', component: ModulViewAdm },
+  { path: '/peserta', name: 'peserta', component: PesertaViewAdm },
+  { path: '/moduladm/upkp', name: 'ModulUPKPadmin', component: ModulUPKPAdm },
+  { path: '/moduladm/tugas-belajar', name: 'ModulTugasBelajaradmin', component: ModulTugasBelajarAdm },
 
-  //lazy-loaded modul viewer siswa
-  { path: '/modul/content/:id', name: 'ModulContent', component: ModulViewerSiswa, props: true },
-  { path: '/modul', name: 'Modul', component: ModulViewSiswa },
-  { path: '/modul/upkp', name: 'ModulUPKP', component: ModulUPKPSiswa },
-  { path: '/modul/upkp/:slug', name: 'ModulUPKPDetail', component: ModuleDetailSiswa, props: true },
-  { path: '/modul/tugas-belajar', name: 'ModulTugasBelajar', component: ModulTugasBelajarSiswa },
-  { path: '/modul/tugas-belajar/:slug', name: 'ModulTugasBelajarDetail', component: ModuleDetailSiswa, props: true },
-  { path: '/tryout', name: 'TryOut', component: TryOutSiswa },
-  { path: '/feedback', name: 'Feedback', component: FeedbackSiswa },
-  { path: '/modul/:slug', name: 'ModulDetailGeneric', component: ModuleDetailSiswa, props: true },
-  { path: '/tryout/:id', name: 'TryOutDetail', component: TryOutDetailSiswa, props: true }
+  // gunakan route detail modul dengan parameter group + slug
+  { path: '/moduladm/:group/:slug', name: 'ModulDetailAdmin', component: ModuleDetailAdm, props: true },
+
+  // rute lain admin
+  { path: '/tryoutadm', name: 'TryOutadmin', component: TryOutAdm },
+  { path: '/feedbackadm', name: 'Feedbackadmin', component: FeedbackAdm },
+  { path: '/tryoutadm/new', name: 'TryOutNewadmin', component: TryOutFormAdm },
+  { path: '/tryoutadm/:id/edit', name: 'TryOutEditadmin', component: TryOutFormAdm, props: true },
+  { path: '/tryoutadm/:id', name: 'TryOutDetailadmin', component: TryOutDetailAdm, props: true },
+
+  // modul viewer Siswa
+  { path: '/modul/content/:id', name: 'ModulContentSiswa', component: ModulViewerAdm, props: true },
+  { path: '/modul', name: 'Modulsiswa', component: ModulViewAdm },
+
+  // gunakan route detail modul dengan parameter group + slug
+  { path: '/modul/:group/:slug', name: 'ModulDetailSiswa', component: ModuleDetailAdm, props: true },
+
+  // rute lain Siswa
+  { path: '/tryout', name: 'TryOutsiswa', component: TryOutAdm },
+  { path: '/feedback', name: 'Feedbacksiswa', component: FeedbackAdm },
+  { path: '/tryout/new', name: 'TryOutNewsiswa', component: TryOutFormAdm },
+  { path: '/tryout/:id/edit', name: 'TryOutEditsiswa', component: TryOutFormAdm, props: true },
+  { path: '/tryout/:id', name: 'TryOutDetailsiswa', component: TryOutDetailAdm, props: true },
 ]
 
 const router = createRouter({

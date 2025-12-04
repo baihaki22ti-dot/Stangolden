@@ -9,15 +9,15 @@
 
         <!-- CHANGED: wrapper flex + grid justify-center to center the whole grid -->
         <!-- CHANGED: pass larger cardWidth/cardHeight to make cards sedikit lebih besar -->
-        <div class="flex justify-center items-center">
+        <div class="flex justify-center items-center" >
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-6 justify-center items-stretch">
-            <router-link
+            <router-link v-if="isAdminUser"
               v-for="(m, i) in modules"
-              :key="m.id ?? i"
-              :to="`/admin/modul/${m.slug}`"
+              :key="`admin-${m.id ?? i}`"
+              :to="`/moduladm/${m.slug}`"
               class="block"
             >
-              <ModuleCard
+              <ModuleCard 
                 :title="m.title"
                 :description="m.description"
                 :image="m.image"
@@ -25,9 +25,28 @@
                 :cardWidth="'25rem'"          
                 :cardHeight="'16rem'"         
                 :imageAreaHeight="'25rem'"   
-                :to="`/admin/modul/${m.slug}`"
+                :to="`/moduladm/${m.slug}`"
               />
             </router-link>
+
+            <router-link v-if="!isAdminUser"
+              v-for="(m, i) in modules"
+              :key="`user-${m.id ?? i}`"
+              :to="`/moduladm/${m.slug}`"
+              class="block"
+            >
+              <ModuleCard 
+                :title="m.title"
+                :description="m.description"
+                :image="m.image"
+                :gradientClass="m.gradientClass"
+                :cardWidth="'25rem'"          
+                :cardHeight="'16rem'"         
+                :imageAreaHeight="'25rem'"   
+                :to="`/modul/${m.slug}`"
+              />
+            </router-link>
+            
           </div>
         </div>
 
@@ -36,16 +55,18 @@
   </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Sidebar from '@/views/Adm/Components/Sidebar.vue';
 import Navbar from '@/views/Adm/Components/Navbar.vue';
 import ModuleCard from '@/views/Adm/Components/ModuleCard.vue';
 import { isSidebarOpen } from '@/stores/sidebar'
+import backendService from '@/services/backendServices';
 
 import img1 from '@/assets/Picture1.png';
 import img2 from '@/assets/Picture2.png';
 
 const isOpen = isSidebarOpen
+
 
 const modules = ref([
   {
@@ -65,6 +86,22 @@ const modules = ref([
     slug: 'tugas-belajar'
   }
 ])
+
+const me = ref(null) 
+const isAdminUser = computed(() => {
+  const role = String(me.value?.role || '').toLowerCase()
+  const flag = !!me.value?.is_admin
+  return role === 'admin' || flag
+})
+onMounted(async () => {
+  try {
+    me.value = await backendService.auth.user()
+  } catch (e) {
+    // tanpa fallback: jika gagal memuat user, asumsikan siswa
+    console.warn('Gagal memuat user, default siswa:', e)
+    me.value = { role: 'siswa', is_admin: false }
+  }
+})
 </script>
 
 <style scoped>

@@ -81,11 +81,11 @@ function save() {
 onMounted(() => load())
 
 function goToNew() {
-  router.push({ path: '/admin/tryout/new' }).catch(()=>{})
+  router.push({ path: '/tryoutadm/new' }).catch(()=>{})
 }
 
 function onEdit(item) {
-  router.push({ path: `/admin/tryout/${item.id}/edit` }).catch(()=>{})
+  router.push({ path: `/tryoutadm/${item.id}/edit` }).catch(()=>{})
 }
 
 function onDelete(item) {

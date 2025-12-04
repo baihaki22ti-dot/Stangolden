@@ -1,7 +1,7 @@
 <template>
   <li class="flex items-center justify-between gap-4 p-3 rounded-md border hover:shadow-sm">
     <div class="min-w-0">
-      <router-link :to="`/admin/tryout/${item.id}`" class="text-sm font-semibold text-slate-800 block truncate">
+      <router-link :to="`/tryoutadm/${item.id}`" class="text-sm font-semibold text-slate-800 block truncate">
         {{ index + 1 }}. {{ item.title }}
       </router-link>
       <div class="text-xs text-slate-500 mt-1">

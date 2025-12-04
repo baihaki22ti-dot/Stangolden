@@ -5,7 +5,7 @@
         <div class="flex-1 min-w-0">
           <!-- CHANGED: Judul jadi link ke halaman viewer modul -->
           <router-link
-            :to="`/admin/modul/content/${module.id}`"
+            :to="`/modul/content/${module.id}`"
             class="block text-sm font-semibold text-slate-800 truncate"
           >
             {{ index + 1 }}. {{ module.name }}
@@ -43,7 +43,6 @@ const props = defineProps({
 <style scoped>
 .line-clamp-3 {
   display: -webkit-box;
-  line-clamp: 3;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;

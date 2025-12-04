@@ -109,14 +109,14 @@ function onSave() {
       const payload = { id, title: form.value.title.trim(), date: form.value.date || '', description: form.value.description.trim(), createdAt: new Date().toISOString() }
       list.unshift(payload)
       persist(list)
-      router.push({ path: '/admin/tryout' })
+      router.push({ path: '/tryoutadm' })
     } else {
       const idx = list.findIndex(t => String(t.id) === String(form.value.id))
       if (idx !== -1) {
         list.splice(idx, 1, { ...form.value })
         persist(list)
       }
-      router.push({ path: '/admin/tryout' })
+      router.push({ path: '/tryoutadm' })
     }
   } catch (e) {
     console.error(e)
@@ -125,7 +125,7 @@ function onSave() {
 }
 
 function onCancel() {
-  router.push({ path: '/admin/tryout' })
+  router.push({ path: '/tryout' })
 }
 </script>
 

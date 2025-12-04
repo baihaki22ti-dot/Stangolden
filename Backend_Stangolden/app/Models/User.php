@@ -2,47 +2,54 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory; // tambahkan ini
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory; // tambahkan HasFactory di sini
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $casts = [
+        'expires_at'   => 'datetime',
+        'expired_at'   => 'datetime',
+        'valid_until'  => 'datetime',
+        'expiry_date'  => 'datetime',
+        'approved'     => 'boolean',
+        'activated'    => 'boolean',
+        'active'       => 'boolean',
+        'is_admin'     => 'boolean',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function expiryDate(): ?Carbon
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+        $candidates = [
+            $this->expires_at,
+            $this->expired_at,
+            $this->valid_until,
+            $this->expiry_date,
         ];
+
+        foreach ($candidates as $dt) {
+            if ($dt instanceof Carbon) return $dt;
+            if ($dt) {
+                try { return Carbon::parse($dt); } catch (\Throwable $e) {}
+            }
+        }
+        return null;
+    }
+
+    public function isExpired(): bool
+    {
+        $exp = $this->expiryDate();
+        return $exp ? now()->greaterThan($exp) : false;
+    }
+
+    public function isAdmin(): bool
+    {
+        $role = strtolower((string)($this->role ?? ''));
+        return $role === 'admin' || (bool)($this->is_admin ?? false);
     }
 }

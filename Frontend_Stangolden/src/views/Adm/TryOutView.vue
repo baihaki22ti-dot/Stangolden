@@ -14,7 +14,7 @@
             <router-link
               v-for="(m, i) in tryouts"
               :key="m.id ?? i"
-              :to="`/admin/tryout/${m.slug}`"
+              :to="`/tryoutadm/${m.slug}`"
               class="block"
             >
               <TryoutCard
@@ -25,7 +25,7 @@
                 :cardWidth="'25rem'"          
                 :cardHeight="'16rem'"         
                 :imageAreaHeight="'25rem'"   
-                :to="`/admin/tryout/${m.slug}`"
+                :to="`/tryoutadm/${m.slug}`"
               />
             </router-link>
           </div>

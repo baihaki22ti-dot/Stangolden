@@ -6,7 +6,7 @@
       class="fixed inset-0 bg-black/40 z-30"
       @click="closeSidebar"
       aria-hidden="true"
-    ></div>
+    />
   </transition>
 
   <!-- sidebar -->
@@ -20,10 +20,14 @@
   >
     <div class="flex items-center justify-between px-4 pt-5">
       <div class="flex items-center gap-3">
-        <img :src="stangolden" class="h-12 w-12 rounded-full object-cover" />
+        <img :src="stangolden" class="h-12 w-12 rounded-full object-cover" alt="avatar" />
         <div>
-          <h2 class="text-lg font-bold">Admin</h2>
-          <p class="text-xs text-sky-100/80">Administrator</p>
+          <h2 class="text-lg font-bold">
+            {{ isAdminUser ? 'Admin' : 'Siswa' }}
+          </h2>
+          <p class="text-xs text-sky-100/80">
+            {{ isAdminUser ? 'Administrator' : 'Participant' }}
+          </p>
         </div>
       </div>
 
@@ -39,22 +43,41 @@
       </button>
     </div>
 
-    <nav class="mt-6 space-y-2 font-medium text-lg px-4">
+    <nav v-if="isAdminUser" class="mt-6 space-y-2 font-medium text-lg px-4">
       <router-link to="/admin/dashboard" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
         Dashboard
       </router-link>
-      <router-link to="/admin/peserta" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+      <div ></div>
+      <router-link to="/peserta" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
         Peserta
       </router-link>
-      <router-link to="/admin/modul" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+      <router-link to="/moduladm" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
         Modul
       </router-link>
 
-      <router-link to="/admin/tryout" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+      <router-link to="/tryoutadm" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
         TryOut
       </router-link>
 
-      <router-link to="/admin/feedback" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+      <router-link to="/feedbackadm" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+        Feedback
+      </router-link>
+      
+    </nav>
+    <nav v-else class="mt-6 space-y-2 font-medium text-lg px-4">
+      <router-link to="/dashboard" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+        Dashboard
+      </router-link>
+      <div ></div>
+      <router-link to="/modul" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+        Modul
+      </router-link>
+
+      <router-link to="/tryout" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
+        TryOut
+      </router-link>
+
+      <router-link to="/feedback" class="block px-3 py-2 rounded hover:bg-white/10 transition" active-class="bg-white/20">
         Feedback
       </router-link>
       
@@ -77,12 +100,30 @@
 import stangolden from '@/assets/stangolden-bg.png'
 import { useRouter } from 'vue-router'
 import { isSidebarOpen, closeSidebar } from '@/stores/sidebar'
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import backendService from '@/services/backendServices'
 
 const router = useRouter()
 function logout() {
   router.push('/login')
 }
+
+// Ambil user untuk mengetahui role
+const me = ref(null)
+const isAdminUser = computed(() => {
+  const role = String(me.value?.role || '').toLowerCase()
+  const flag = !!me.value?.is_admin
+  return role === 'admin' || flag
+})
+onMounted(async () => {
+  try {
+    me.value = await backendService.auth.user()
+  } catch (e) {
+    // tanpa fallback: jika gagal memuat user, asumsikan siswa
+    console.warn('Gagal memuat user, default siswa:', e)
+    me.value = { role: 'siswa', is_admin: false }
+  }
+})
 
 // reactive ref from store
 const isOpen = isSidebarOpen
