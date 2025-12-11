@@ -1,131 +1,101 @@
 <template>
-  <Teleport to="body">
-    <transition name="fade">
-      <div v-if="modelValue" class="fixed inset-0 flex items-center justify-center z-[10000] p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
+  <div v-if="modelValue" class="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40" @click="$emit('update:modelValue', false)"></div>
+    <div class="relative w-full max-w-lg bg-white rounded-xl shadow-lg p-6 space-y-4">
+      <h4 class="text-lg font-semibold">{{ mode === 'edit' ? 'Edit Modul' : 'Tambah Modul' }}</h4>
 
-        <form @submit.prevent="submit" class="relative w-full max-w-lg bg-white rounded-xl shadow-lg p-6 space-y-5 border border-slate-200">
-          <h2 class="text-lg font-semibold">{{ mode === 'add' ? 'Tambah Modul' : 'Edit Modul' }}</h2>
+      <label class="text-sm">Nama
+        <input v-model="form.name" class="w-full border rounded px-3 py-2 text-sm" />
+      </label>
+      <label class="text-sm">Deskripsi
+        <textarea v-model="form.description" rows="3" class="w-full border rounded px-3 py-2 text-sm"></textarea>
+      </label>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">Nama Modul</label>
-              <input v-model.trim="form.name" type="text" class="w-full border rounded px-3 py-2 text-sm" required />
-            </div>
+      <!-- Link YouTube (opsional) -->
+      <label class="text-sm">Link YouTube (opsional)
+        <input
+          v-model="form.youtube_url"
+          placeholder="https://youtu.be/xxxx atau https://www.youtube.com/watch?v=xxxx"
+          class="w-full border rounded px-3 py-2 text-sm"
+        />
+      </label>
 
-            <!-- Group & Sub Group dikendalikan oleh halaman; tidak perlu input di modal agar sederhana -->
-            <div class="text-xs text-slate-500">
-              Grup dan Halaman mengikuti rute saat ini.
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">Deskripsi</label>
-              <textarea v-model.trim="form.description" rows="3" class="w-full border rounded px-3 py-2 text-sm"></textarea>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">
-                File PDF {{ mode==='add' ? '(wajib)' : '(opsional untuk ganti)' }}
-              </label>
-              <input type="file" accept="application/pdf" @change="onFileChange" class="w-full text-sm" :required="mode==='add'" />
-              <p v-if="fileName" class="text-xs text-slate-500 mt-1">Dipilih: {{ fileName }}</p>
-              <p v-else-if="mode==='edit' && moduleData?.pdf_name" class="text-xs text-slate-500 mt-1">Saat ini: {{ moduleData.pdf_name }}</p>
-            </div>
-          </div>
-
-          <div class="flex justify-end gap-3">
-            <button type="button" @click="close" class="px-4 py-2 border rounded">Batal</button>
-            <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded">{{ mode==='add' ? 'Tambah' : 'Simpan' }}</button>
-          </div>
-        </form>
+      <!-- Preview embed jika link valid -->
+      <div v-if="youtubeEmbedUrl" class="mt-2">
+        <div class="text-xs text-slate-500 mb-1">Preview Video</div>
+        <div class="aspect-video w-full rounded overflow-hidden border bg-black/5">
+          <iframe
+            :src="youtubeEmbedUrl"
+            title="YouTube video preview"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            class="w-full h-full"
+          ></iframe>
+        </div>
       </div>
-    </transition>
-  </Teleport>
+
+      <label class="text-sm">PDF
+        <input type="file" accept="application/pdf" @change="onPdf" class="w-full text-sm" />
+        <div v-if="mode==='edit' && moduleData?.pdf_name" class="text-xs text-slate-500 mt-1">Saat ini: {{ moduleData.pdf_name }}</div>
+      </label>
+
+      <div class="flex items-center justify-end gap-2">
+        <button @click="$emit('update:modelValue', false)" class="px-3 py-2 border rounded text-sm">Batal</button>
+        <button @click="submit" class="px-3 py-2 bg-emerald-600 text-white rounded text-sm">Simpan</button>
+      </div>
+    </div>
+  </div>
 </template>
 
-<!-- <script setup>
-import { reactive, ref, watch, computed } from 'vue'
-
-const props = defineProps({ modelValue: Boolean, mode: String, moduleData: Object })
-const emit = defineEmits(['update:modelValue','submit'])
-
-const form = reactive({ id: null, name: '', group: '', sub_group: '', description: '', pdfFile: null })
-const fileName = ref('')
-
-const SUB_GROUP_MAP = {
-  upkp: [
-    { value: 'wawasan-kebangsaan', label: 'Wawasan Kebangsaan' },
-    { value: 'nilai-nilai-kemenkeu', label: 'Nilai-Nilai Kemenkeu' },
-    { value: 'etika-pns', label: 'Etika PNS' },
-    { value: 'tata-aturan-kepegawaian', label: 'Tata Aturan Kepegawaian' },
-    { value: 'fungsi-kemenkeu', label: 'Fungsi Kemenkeu' },
-  ],
-  'tugas-belajar': [
-    { value: 'tpa', label: 'TPA' },
-    { value: 'tbi', label: 'TBI' },
-  ]
-}
-
-const subGroupOptions = computed(() => SUB_GROUP_MAP[form.group] || [])
-
-watch(() => form.group, () => { form.sub_group = '' })
-
-watch(() => props.moduleData, (val) => {
-  if (props.mode === 'edit' && val) {
-    form.id = val.id
-    form.name = val.name ?? ''
-    form.group = val.group ?? ''
-    form.sub_group = val.sub_group ?? ''
-    form.description = val.description ?? ''
-    form.pdfFile = null
-    fileName.value = ''
-  } else {
-    form.id = null; form.name = ''; form.group = ''; form.sub_group = ''; form.description = ''; form.pdfFile = null; fileName.value = ''
-  }
-}, { immediate: true })
-
-function onFileChange(e) {
-  const f = e.target.files?.[0] || null
-  form.pdfFile = f
-  fileName.value = f ? f.name : ''
-}
-
-function close() { emit('update:modelValue', false) }
-function submit() { emit('submit', { ...form }) }
-</script> -->
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { reactive, watch, computed } from 'vue'
 
-const props = defineProps({ modelValue: Boolean, mode: String, moduleData: Object })
-const emit = defineEmits(['update:modelValue','submit'])
+const props = defineProps({
+  modelValue: { type: Boolean, default: false },
+  mode: { type: String, default: 'add' }, // 'add' | 'edit'
+  moduleData: { type: Object, default: null }
+})
+const emit = defineEmits(['update:modelValue', 'submit'])
 
-const form = reactive({ id: null, name: '', description: '', pdfFile: null })
-const fileName = ref('')
+const form = reactive({
+  name: '',
+  description: '',
+  youtube_url: '',
+  pdfFile: null,
+})
 
-watch(() => props.moduleData, (val) => {
-  if (props.mode === 'edit' && val) {
-    form.id = val.id
-    form.name = val.name ?? ''
-    form.description = val.description ?? ''
+watch(() => props.moduleData, (m) => {
+  if (props.mode === 'edit' && m) {
+    form.name = m.name || ''
+    form.description = m.description || ''
+    form.youtube_url = m.youtube_url || ''
     form.pdfFile = null
-    fileName.value = ''
   } else {
-    form.id = null; form.name = ''; form.description = ''; form.pdfFile = null; fileName.value = ''
+    form.name = ''
+    form.description = ''
+    form.youtube_url = ''
+    form.pdfFile = null
   }
 }, { immediate: true })
 
-function onFileChange(e) {
-  const f = e.target.files?.[0] || null
-  form.pdfFile = f
-  fileName.value = f ? f.name : ''
+function onPdf(e) {
+  form.pdfFile = e.target.files?.[0] || null
 }
 
-function close() { emit('update:modelValue', false) }
+// Build embed url if possible
+const youtubeEmbedUrl = computed(() => {
+  const u = String(form.youtube_url || '').trim()
+  if (!u) return ''
+  const short = u.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/)
+  const long = u.match(/[?&]v=([A-Za-z0-9_-]{6,})/)
+  const id = (short && short[1]) || (long && long[1]) || ''
+  return id ? `https://www.youtube.com/embed/${id}` : ''
+})
+
 function submit() {
-  emit('submit', { name: form.name, description: form.description, pdfFile: form.pdfFile })
+  emit('submit', { ...form })
 }
-
-
 </script>
 
 <style scoped>

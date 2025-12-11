@@ -1,6 +1,6 @@
-import ModuleIndex from '@/views/Adm/ModuleIndex.vue'
-import ModulUPKP from '@/views/Adm/ModulUPKP.vue'
-import ModulTugasBelajar from '@/views/Adm/ModulTugasBelajar.vue'
+import ModuleIndex from '@/views/Adm/Modul/ModuleIndex.vue'
+import ModulUPKP from '@/views/Adm/Modul/ModulUPKP.vue'
+import ModulTugasBelajar from '@/views/Adm/Modul/ModulTugasBelajar.vue'
 import ModuleDetail from '@/views/Adm/ModuleDetail.vue'
 
 export default [

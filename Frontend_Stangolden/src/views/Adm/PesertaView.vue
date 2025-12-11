@@ -119,7 +119,7 @@
                       </button>
 
                       <button @click="editCandidate(p.id)" class="px-2 py-1 rounded border text-sm hover:bg-slate-100">Edit</button>
-                      <button @click="remove(p.id)" class="px-2 py-1 rounded bg-red-50 text-red-600 text-sm hover:bg-red-100">Hapus</button>
+                      <!-- <button @click="remove(p.id)" class="px-2 py-1 rounded bg-red-50 text-red-600 text-sm hover:bg-red-100">Hapus</button> -->
                     </div>
                   </td>
                 </tr>

@@ -40,19 +40,12 @@ const props = defineProps({
   description: { type: String, default: '' },
   image: { type: String, required: true },
   gradientClass: { type: String, default: 'from-sky-400 via-indigo-600 to-indigo-900' },
-
-  // CHANGED: added cardWidth prop so parent can set card width (e.g. '18rem')
   cardWidth: { type: String, default: '18rem' },
-
-  // CHANGED: adjust overall card height and image area height easily
-  cardHeight: { type: String, default: '15rem' },       // min-height for entire card
+  cardHeight: { type: String, default: '15rem' },
   imageAreaHeight: { type: String, default: '8rem' },
-
-  // optional route target (if parent uses <router-link> wrapper)
-  to: { type: [String, Object], default: null }
+  to: { type: [String, Object], default: null },
 })
 
-/* CHANGED: expose inline style including width and heights so parent can control sizing */
 const cardStyle = computed(() => {
   const s = { '--img-h': props.imageAreaHeight }
   if (props.cardHeight) s.minHeight = props.cardHeight

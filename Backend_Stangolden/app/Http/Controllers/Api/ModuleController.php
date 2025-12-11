@@ -22,6 +22,7 @@ class ModuleController extends Controller
             'pdf_url' => $m->pdf_path ? url(Storage::url($m->pdf_path)) : null,
             'pdf_name' => $m->pdf_original_name,
             'pdf_size' => $m->pdf_size,
+            'youtube_url' => $m->youtube_url,
             'created_at' => optional($m->created_at)->toDateTimeString(),
             'updated_at' => optional($m->updated_at)->toDateTimeString(),
         ];
@@ -49,10 +50,15 @@ class ModuleController extends Controller
         return response()->json($modules->map(fn($m) => $this->transform($m)));
     }
 
+    // NEW: GET /api/admin/modules/{module}
+    public function show(Module $module)
+    {
+        return response()->json($this->transform($module));
+    }
+
     // POST /api/admin/modules
     public function store(Request $request)
     {
-        // Normalisasi slug untuk konsistensi
         if ($request->has('group')) {
             $request->merge(['group' => Str::slug((string)$request->input('group'), '-')]);
         }
@@ -66,6 +72,7 @@ class ModuleController extends Controller
             'sub_group' => 'nullable|string',
             'description' => 'nullable|string',
             'pdf' => 'required|file|mimes:pdf|max:51200',
+            'youtube_url' => 'nullable|string|max:255',
         ]);
 
         $file = $request->file('pdf');
@@ -79,6 +86,7 @@ class ModuleController extends Controller
             'pdf_path' => $path,
             'pdf_original_name' => $file->getClientOriginalName(),
             'pdf_size' => $file->getSize(),
+            'youtube_url' => $validated['youtube_url'] ?? null,
         ]);
 
         return response()->json(['message' => 'Modul dibuat', 'data' => $this->transform($module)], 201);
@@ -87,7 +95,6 @@ class ModuleController extends Controller
     // PUT /api/admin/modules/{module}
     public function update(Request $request, Module $module)
     {
-        // Bersihkan dan normalisasi
         if ($request->has('group')) {
             $group = (string)$request->input('group');
             if ($group === '') {
@@ -107,9 +114,10 @@ class ModuleController extends Controller
             'sub_group' => 'sometimes|nullable|string',
             'description' => 'nullable|string',
             'pdf' => 'nullable|file|mimes:pdf|max:51200',
+            'youtube_url' => 'nullable|string|max:255',
         ]);
 
-        foreach (['name','group','sub_group','description'] as $key) {
+        foreach (['name','group','sub_group','description','youtube_url'] as $key) {
             if (array_key_exists($key, $validated)) {
                 $module->{$key} = $validated[$key];
             }

@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Services\BrevoMailService;
+use App\Notifications\AccountApproved;
 use Carbon\Carbon;
 
 class AdminUserController extends Controller
@@ -111,17 +113,108 @@ class AdminUserController extends Controller
     }
 
     // POST /api/admin/users/{user}/approve
-    public function approve(User $user)
-    {
-        try {
-            $user->approved = true;
-            $user->save();
-            return response()->json(['message' => 'User di-approve']);
-        } catch (\Throwable $e) {
-            Log::error('AdminUserController@approve error: ' . $e->getMessage(), ['exception' => $e]);
-            return response()->json(['message' => 'Server error saat approve', 'detail' => config('app.debug') ? $e->getMessage() : null], 500);
-        }
+
+    // public function approve(User $user)
+    // {
+    //     try {
+    //         $user->approved = true;
+    //         $user->save();
+    //         return response()->json(['message' => 'User di-approve']);
+    //     } catch (\Throwable $e) {
+    //         Log::error('AdminUserController@approve error: ' . $e->getMessage(), ['exception' => $e]);
+    //         return response()->json(['message' => 'Server error saat approve', 'detail' => config('app.debug') ? $e->getMessage() : null], 500);
+    //     }
+    // }
+
+    // public function approve(User $user, Request $request)
+    // {
+    //     // Update status user
+    //     $user->approved = true;
+    //     // opsional: aktifkan akun saat di-ACC
+    //     if (is_null($user->active)) {
+    //         $user->active = true;
+    //     }
+    //     // opsional: set expiry jika dikirim dari request
+    //     if ($request->filled('expires_at')) {
+    //         $user->expires_at = $request->date('expires_at');
+    //     }
+    //     // simpan kategori jika ada
+    //     if ($request->has('upkp')) {
+    //         $user->upkp = (bool) $request->boolean('upkp');
+    //     }
+    //     if ($request->has('tugas_belajar')) {
+    //         $user->tugas_belajar = (bool) $request->boolean('tugas_belajar');
+    //     }
+
+    //     $user->save();
+
+    //     // Kirim notifikasi email
+    //     $loginUrl = config('app.frontend_url') ?? url('/login');
+
+    //     try {
+    //         $user->notify(new AccountApproved(
+    //             user: $user,
+    //             loginUrl: $loginUrl,
+    //             expiresAt: optional($user->expires_at)->toDateString(),
+    //             upkp: (bool)($user->upkp ?? false),
+    //             tugasBelajar: (bool)($user->tugas_belajar ?? false)
+    //         ));
+    //     } catch (\Throwable $e) {
+    //         report($e); // jangan gagalkan approve hanya karena email gagal
+    //     }
+
+    //     return response()->json(['message' => 'User approved']);
+    // }
+
+
+public function approve(User $user, Request $request, BrevoMailService $brevo)
+{
+    // Update status user
+    $user->approved = true;
+
+    if (is_null($user->active)) {
+        $user->active = true;
     }
+
+    if ($request->filled('expires_at')) {
+        $user->expires_at = $request->date('expires_at');
+    }
+
+    if ($request->has('upkp')) {
+        $user->upkp = (bool) $request->boolean('upkp');
+    }
+
+    if ($request->has('tugas_belajar')) {
+        $user->tugas_belajar = (bool) $request->boolean('tugas_belajar');
+    }
+
+    $user->save();
+
+    // Build data email
+    $loginUrl = config('app.frontend_url') ?? url('/login');
+
+    $html = view('emails.account_approved', [
+        'user' => $user,
+        'loginUrl' => $loginUrl,
+        'expiresAt' => optional($user->expires_at)->toDateString(),
+        'upkp' => (bool) ($user->upkp ?? false),
+        'tugasBelajar' => (bool) ($user->tugas_belajar ?? false),
+    ])->render();
+
+    try {
+        // Kirim via Brevo API
+        $brevo->send(
+            $user->email,
+            'Akun Anda Telah Disetujui - STANGOLDEN',
+            $html
+        );
+    } catch (\Throwable $e) {
+        report($e); // jangan gagalkan proses approve
+    }
+
+    return response()->json(['message' => 'User approved']);
+}
+
 
     // POST /api/admin/users/{user}/revoke
     public function revoke(User $user)
